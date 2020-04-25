@@ -74,24 +74,31 @@ def best_choice(x, function, formula_variables):
         if function.evaluate(dict(zip(formula_variables, x[i]))) < min_f:
             min_f = function.evaluate(dict(zip(formula_variables, x[i])))
             best_x = x[i]
-    return best_x
+    key = ["x", "f"]
+    value = [best_x, min_f]
+
+    return dict(zip(key, value))
 
 
-def de_algorithm(function, formula_variables, bounds, iterations, population, F,
-                 CR):  # TODO dodac parametr f_iter zeby dopisywac do niego wyniki kolejnych iteracji,
-    # dodac jeszcze jeden parametr- czy liczyc od nowa czy kontynuowac, jak liczy od nowa
-    #dodac parametr x- jak liczy od nowa to nie bedzie potrzebny ale jak liczy dalej to ma na tej podstawie kontynuowac
+def de_algorithm(function, formula_variables, bounds, iterations, population, F, CR, calc_continue, x_old, f_iter):
     variables_name = ['x1', 'x2', 'x3', 'x4', 'x5']
     variables_bounds = dict(zip(variables_name, bounds))
-    #TODO olac inicjalizacje jesli ma kontynuowac
-    x = initialization(formula_variables, variables_bounds, population)
+
+    if calc_continue == 0:  # czy ma kontynuować
+        x = initialization(formula_variables, variables_bounds, population)
+        f_iter.clear()
+    elif calc_continue == 1:
+        x = x_old
+        x = check_bounds(x, formula_variables, variables_bounds)
     for i in range(0, iterations):
         v = mutation(x, formula_variables, variables_bounds, F)
         u = crossover(x, v, CR)
         x = selection(x, u, function, formula_variables)
-        # TODO tu dodac jeszcze best_choice z tego x wyliczonego
-        # TODO a potem dodac do argumentu f_iter wartosc z tym x ale przez add()
+        f_iter.append(best_choice(x, function, formula_variables).get("f"))
 
-    best_x = best_choice(x, function, formula_variables)
-    # TODO zwracac to jako slownik ["x":x,"x_iter":x_iter]
-    return best_x  # nieposortowane wartosci
+    x_best = best_choice(x, function, formula_variables).get("x")
+
+    key = ["x", "x_best"]
+    value = [x, x_best]
+    x_dict = dict(zip(key, value))
+    return x_dict  # nieposortowane wartosci

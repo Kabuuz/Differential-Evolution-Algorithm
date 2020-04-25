@@ -6,6 +6,8 @@ from math import *
 from random import random, randint
 import numpy as np
 from de_algorithm import de_algorithm
+import matplotlib
+import matplotlib.pyplot as plt
 
 max_number_of_variables = 5
 sample_function = 'x1^4+x2^4-0.62*x1^2-0.62*x2^2'
@@ -167,7 +169,7 @@ def init_window():
 
     global entry_iteration
     entry_iteration = Entry(window, width=15)
-    entry_iteration.insert(0, "100")
+    entry_iteration.insert(0, "10")
     entry_iteration_row = label_iteration_row
     entry_iteration.grid(column=8, columnspan=3, row=entry_iteration_row)
 
@@ -178,7 +180,7 @@ def init_window():
 
     global entry_s
     entry_s = Entry(window, width=15)
-    entry_s.insert(0, "50")
+    entry_s.insert(0, "10")
     entry_s_row = label_s_row
     entry_s.grid(column=8, columnspan=3, row=entry_s_row)
 
@@ -204,9 +206,13 @@ def init_window():
     entry_cr_row = label_cr_row
     entry_cr.grid(column=8, columnspan=3, row=entry_cr_row)
 
-    button_calculate = Button(window, text='Oblicz', command=lambda: calculate(entry_formula))
+    button_calculate = Button(window, text='Oblicz', command=lambda: calculate(entry_formula, 0, x, f_iter))
     button_calculate_row = label_x5_row + 1
-    button_calculate.grid(column=4, columnspan=3, row=button_calculate_row)
+    button_calculate.grid(column=2, columnspan=3, row=button_calculate_row)
+
+    button_continue = Button(window, text='Kontynuuj', command=lambda: calculate(entry_formula, 1, x, f_iter))
+    button_continue_row = button_calculate_row
+    button_continue.grid(column=6, columnspan=3, row=button_continue_row)
 
     global label_variable_value
     label_variable_value = [StringVar(), StringVar(), StringVar(), StringVar(), StringVar()]
@@ -233,6 +239,9 @@ def init_window():
     label_result = Label(window, textvariable=label_result_value, width=15)
     label_result.grid(column=0, columnspan=3, row=label_xn_row + 5)
     label_result.config(anchor=W)
+
+    button_plot = Button(window, text='Iteracje', width=15, command=lambda: draw_iteration_plot(f_iter))
+    button_plot.grid(column=12, columnspan=3, row=label_xn_row + 5)
 
 
 class InvalidVariableError(Exception):
@@ -327,7 +336,7 @@ def print_result(variables_name, variables_value, result_value):
     label_result_value.set('min f(x) = ' + str(round(result_value, 5)))
 
 
-def calculate(entry_obj):
+def calculate(entry_obj, calc_continue, x, f_iter):
     formula_text = entry_obj.get()
     parser = Parser()
     if len(formula_text) > 1:  # bo puste jest jako 1
@@ -339,17 +348,25 @@ def calculate(entry_obj):
             if parameters is not None:
                 bounds = parameters.get('bounds')
                 iterations = parameters.get('iterations')
-                s = parameters.get('s')  # TODO populacja musi byc >=4
+                s = parameters.get('s')
                 f = parameters.get('f')
                 cr = parameters.get('cr')
                 # uruchomienie algorytmu
-                #TODO wywolac w tej funkcji jeszcze argument f_iter
-                #TODO wywolac w tej funkcji jeszcze argument x
-                #TODO odczyt slownika a nie pojedynczej zmiennej
-                x_best = de_algorithm(formula, formula_variables, bounds, iterations, s, f, cr)
+                x_out = de_algorithm(formula, formula_variables, bounds, iterations, s, f, cr, calc_continue, x,
+                                     f_iter)
+
+                x_best = x_out.get("x_best")  # najlepszy wektor x
+                # kopiowanie dotychczasowego x
+                x_temp = []
+                for value in x_out.get("x"):
+                    x_temp.append(value)
+                x.clear()
+                for value in x_temp:
+                    x.append(value)
                 # wydruk wynikow
                 result_value = formula.evaluate(dict(zip(formula_variables, x_best)))
                 print_result(formula_variables, x_best, result_value)
+
 
         # obsluga bledow
         except ValueError:
@@ -372,5 +389,21 @@ def calculate(entry_obj):
         messagebox.showinfo("Błąd", "Brak funkcji celu")
 
 
+def draw_iteration_plot(f_iter):
+    t = np.arange(1, len(f_iter) + 1, 1)
+
+    fig, ax = plt.subplots()
+    ax.plot(t, f_iter)
+
+    ax.set(xlabel='Iteracje', ylabel='min f(x)',
+           title='Zależność obliczonego minimum w zależności od ilości iteracji')
+    # ax.grid()#siatka
+
+    # fig.savefig("test.png") #do zapisu wykresu
+    plt.show()
+
+
+x = []
+f_iter = []
 init_window()
 mainloop()
