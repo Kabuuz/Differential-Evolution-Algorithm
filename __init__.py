@@ -343,10 +343,13 @@ def calculate(entry_obj):
                 f = parameters.get('f')
                 cr = parameters.get('cr')
                 # uruchomienie algorytmu
-                x = de_algorithm(formula, formula_variables, bounds, iterations, s, f, cr)
+                #TODO wywolac w tej funkcji jeszcze argument f_iter
+                #TODO wywolac w tej funkcji jeszcze argument x
+                #TODO odczyt slownika a nie pojedynczej zmiennej
+                x_best = de_algorithm(formula, formula_variables, bounds, iterations, s, f, cr)
                 # wydruk wynikow
-                result_value = formula.evaluate(dict(zip(formula_variables, x)))
-                print_result(formula_variables, x, result_value)
+                result_value = formula.evaluate(dict(zip(formula_variables, x_best)))
+                print_result(formula_variables, x_best, result_value)
 
         # obsluga bledow
         except ValueError:

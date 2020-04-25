@@ -77,15 +77,21 @@ def best_choice(x, function, formula_variables):
     return best_x
 
 
-def de_algorithm(function, formula_variables, bounds, iterations, population, F, CR):
+def de_algorithm(function, formula_variables, bounds, iterations, population, F,
+                 CR):  # TODO dodac parametr f_iter zeby dopisywac do niego wyniki kolejnych iteracji,
+    # dodac jeszcze jeden parametr- czy liczyc od nowa czy kontynuowac, jak liczy od nowa
+    #dodac parametr x- jak liczy od nowa to nie bedzie potrzebny ale jak liczy dalej to ma na tej podstawie kontynuowac
     variables_name = ['x1', 'x2', 'x3', 'x4', 'x5']
     variables_bounds = dict(zip(variables_name, bounds))
+    #TODO olac inicjalizacje jesli ma kontynuowac
     x = initialization(formula_variables, variables_bounds, population)
     for i in range(0, iterations):
         v = mutation(x, formula_variables, variables_bounds, F)
         u = crossover(x, v, CR)
         x = selection(x, u, function, formula_variables)
+        # TODO tu dodac jeszcze best_choice z tego x wyliczonego
+        # TODO a potem dodac do argumentu f_iter wartosc z tym x ale przez add()
 
     best_x = best_choice(x, function, formula_variables)
-
+    # TODO zwracac to jako slownik ["x":x,"x_iter":x_iter]
     return best_x  # nieposortowane wartosci
